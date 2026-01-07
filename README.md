@@ -3,11 +3,11 @@
 **An Open Standard for Deterministic, Post-Quantum-Safe Custody, Compliance, and AI Operations**
 
 * **Specification Version:** 2.0.0
-* **Status:** Implementation Ready
+* **Status:** Public beta
 * **Date:** 2026
 * **Author:** rosiea
 * **Contact:** PQRosie@proton.me
-* **Licence:** Apache License 2.0 — Copyright 2025 rosiea
+* **Licence:** Apache License 2.0 — Copyright 2026 rosiea
 
 ---
 
