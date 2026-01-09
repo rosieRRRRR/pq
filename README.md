@@ -137,11 +137,13 @@ All enforcement and refusal semantics are defined exclusively by **PQSEC**.
 
 ### 2.1 Refusal-Only Enforcement
 
-PQ does not ask "is this allowed?" It asks "is there any reason to refuse?"
+PQ does not ask “is this allowed?” It asks “is there any reason to refuse?”
 
 No artefact, key, model, device, or component grants authority. An operation proceeds only if PQSEC does not refuse it after evaluating all required predicates.
 
-This is not a semantic distinction. It changes the failure mode from "fail-open on missing permission" to "fail-closed on missing evidence."
+This is not a semantic distinction. It changes the failure mode from “fail-open on missing permission” to “fail-closed on missing evidence.”
+
+---
 
 ### 2.2 Evidence Production vs Authority
 
@@ -158,42 +160,46 @@ Every component except PQSEC produces evidence:
 
 None of these artefacts carry authority. They are inputs to PQSEC, which produces the sole authoritative output: an EnforcementOutcome.
 
+---
+
 ### 2.3 Single Enforcement Authority
 
 PQSEC is the only component that produces enforcement decisions.
 
 Any parallel enforcement logic outside PQSEC is non-conformant and creates bypass vectors. This is not a recommendation; it is a structural requirement.
 
+---
+
 ### 2.4 Determinism
 
-Given identical inputs, PQSEC produces identical outputs. There is no probabilistic evaluation, no heuristic judgment, no "usually works." Enforcement is reproducible and auditable.
+Given identical inputs, PQSEC produces identical outputs. There is no probabilistic evaluation, no heuristic judgment, no “usually works.” Enforcement is reproducible and auditable.
+
+---
 
 ### 2.5 Fail-Closed
 
 Uncertainty results in refusal:
 
-* Missing input → refuse
-* Non-canonical encoding → refuse
-* Ambiguous time → refuse
-* Unverifiable signature → refuse
-* Partial predicate satisfaction → refuse
+* Missing input → refuse  
+* Non-canonical encoding → refuse  
+* Ambiguous time → refuse  
+* Unverifiable signature → refuse  
+* Partial predicate satisfaction → refuse  
 
 There are no degraded modes for Authoritative operations.
 
 ---
 
-## 2.6 Negative Capability Theorem (Normative)
+### 2.6 Enforcement Invariant (Normative)
 
-**Location:** PQ Specification → Section 2 (Architecture Principles)
+Across the entire PQ ecosystem, enforcement authority is centralized.
 
-PQ defines a single enforcement authority boundary across the ecosystem.
-
-1. **Only PQSEC MAY produce an allow signal** for any operation attempt.
-2. No specification other than PQSEC MAY emit any artefact whose semantics are “ALLOW”, “APPROVE”, “PERMIT”, or any equivalent authority-granting output.
+1. **Only PQSEC MAY emit an authoritative ALLOW outcome** for any operation attempt.
+2. No other specification, component, artefact, or subsystem MAY emit any signal whose semantics imply permission, approval, or execution capability.
 3. All other specifications define structure or produce evidence only. They MUST NOT grant authority, directly or indirectly.
-4. Any implementation or component that produces an allow signal outside PQSEC is **non-conformant** and creates enforcement bypass vectors.
+4. Any implementation that produces an allow or approval signal outside PQSEC is non-conformant and creates enforcement bypass vectors.
 
-This theorem is an ecosystem-wide invariant and applies uniformly across custody, execution, time, runtime evidence, AI operations, and human-state extensions.
+This invariant applies uniformly across custody, execution, time, runtime attestation, AI operations, and human-state extensions.
 
 ---
 
@@ -243,7 +249,12 @@ PQSEC consumes evidence from all other components and produces exactly one outco
 
 **PQSEC is where authority lives. All other components feed into it.**
 
-**Specification:** PQSEC v2.0.1
+**Specification:** PQSEC v2.0.2
+
+#### 3.4.1 Session Continuity and Resumption
+Session continuity and optional session resumption are treated as evidence-only mechanisms. Any reuse of session state across connections is subject to deterministic evaluation by PQSEC and MUST NOT bypass time, policy, consent, runtime, or ledger predicates.
+
+Normative enforcement rules for session resumption, when enabled by policy, are defined exclusively in PQSEC.
 
 ### 3.5 PQHD — Custody Authority
 
@@ -338,7 +349,19 @@ PQ explicitly does NOT define:
 * Censorship resistance
 * Miner behaviour or mempool strategy
 
-These are either out of scope or explicitly rejected as incompatible with PQ's security model.
+These are either out of scope or explicitly rejected as incompatible with PQ’s security model.
+
+* **Emergency Revocation and Kill-Switches:**  
+  PQ does not define emergency revocation or “kill switch” orchestration at the ecosystem level.  
+  Revocation semantics, including identity or session invalidation under compromise, are expected to be defined by producing specifications and enforced by PQSEC through existing refusal, lockout, and monotonicity guarantees.
+
+* **Hardware-Rooted Attestation:**  
+  PQ does not define manufacturer trust anchors, hardware roots of trust, or device-specific measurement grammars (e.g., TPM, SGX, TEE).  
+  Where hardware attestation is required, it MUST be provided by an external producing specification and consumed as evidence by PQSEC. PQ intentionally avoids embedding vendor- or jurisdiction-specific trust assumptions into the core ecosystem.
+
+* **Social Recovery Orchestration:**  
+  While PQ supports multi-signature custody models, guardian quorums, and recovery delays via PQHD and PQSEC, it does not define the user-experience, communication, or coordination protocols for social recovery.  
+  Recovery orchestration is the responsibility of the implementing wallet or custody service.
 
 ---
 
@@ -375,12 +398,14 @@ The following patterns are explicitly non-conformant:
 
 ### 7.1 Current Versions
 
+The following specification versions are aligned and implementation-ready within the PQ ecosystem:
+
 | Specification | Version | Status |
 |---------------|---------|--------|
 | PQ (this document) | 2.0.0 | Implementation Ready |
 | Epoch Clock | 2.1.1 | Implementation Ready |
 | PQSF | 2.0.2 | Implementation Ready |
-| PQSEC | 2.0.1 | Implementation Ready |
+| PQSEC | 2.0.2 | Implementation Ready |
 | PQVL | 1.0.3 | Implementation Ready |
 | PQHD | 1.1.0 | Implementation Ready |
 | ZEB (includes ZET) | 1.2.0 | Implementation Ready |
@@ -389,6 +414,8 @@ The following patterns are explicitly non-conformant:
 | Neural Lock | 1.0.0 | Domain Evaluation Requested |
 
 ### 7.2 Deprecated Specifications
+
+The following specifications are formally deprecated and MUST NOT be used in new implementations:
 
 | Specification | Status | Superseded By |
 |---------------|--------|---------------|
@@ -516,28 +543,15 @@ Normative behaviour is defined by PQSEC.
 
 ---
 
-PQ — Post-Quantum Security Ecosystem
-Changelog
-Version 2.0.0 (Current)
-Enforcement Centralization: Centralized all enforcement logic and authority decisions into a single deterministic core: PQSEC.
+## Changelog
 
-Scope Expansion: Shifted from "PQ-ready" cryptography to addressing modern "execution-gap" exploits, including replay, time forgery, and consent reuse.
+### Version 2.0.0 (Current)
 
-Structural Decoupling: Redefined the relationship between modules (Clock, VL, AI) such that no component grants authority in isolation; they now provide verifiable predicates for the core enforcement layer.
+* **Enforcement Centralization:** Centralized all enforcement logic and authority decisions into a single deterministic core: PQSEC.
+* **Scope Expansion:** Shifted from "PQ-ready" cryptography to addressing modern execution-gap exploits, including replay, time forgery, and consent reuse.
+* **Structural Decoupling:** Redefined the relationship between modules (Clock, VL, AI) such that no component grants authority in isolation; they now provide verifiable predicates for the core enforcement layer.
+* **Deprecation Management:** Formally retired the UDC specification and migrated its normative functions into PQAI and PQSEC.
 
-Deprecation Management: Formally retired the UDC specification and moved its normative functions into the PQAI module.
-
----
-
-Changelog
-Version 2.0.0 (Current)
-Architectural Refactoring: Re-defined the ecosystem as a composed set of specifications where no component grants authority in isolation.
-
-Authority Externalization: Formally delegated all enforcement, refusal, and gating semantics to the PQSEC module.
-
-Scope Update: Expanded the ecosystem's focus to address "execution-gap" exploits—such as replay, time forgery, and consent reuse—alongside long-term quantum-capable adversary protection.
-
-Lifecycle Management: Formally retired the UDC specification and coordinated the migration of its functionality into the PQAI and PQSEC modules.
 
 ---
 
