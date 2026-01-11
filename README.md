@@ -190,7 +190,7 @@ There are no degraded modes for Authoritative operations.
 
 ---
 
-### 2.6 Enforcement Invariant (Normative)
+### 2.6 Enforcement Invariant (Ecosystem Requirement)
 
 Across the entire PQ ecosystem, enforcement authority is centralized.
 
@@ -369,36 +369,77 @@ These are either out of scope or explicitly rejected as incompatible with PQ’s
 
 ### 6.1 Ecosystem Conformance
 
-An implementation claiming PQ ecosystem conformance MUST:
+An implementation claiming **PQ ecosystem conformance** MUST:
 
-1. Delegate all enforcement to PQSEC
-2. Use Epoch Clock ticks for all time references
-3. Use PQSF canonical encoding for all signed/hashed artefacts
-4. Treat no artefact as authoritative until PQSEC evaluation
-5. Fail closed on any ambiguity, missing input, or verification failure
+1. Delegate all enforcement to PQSEC.
+2. Use Epoch Clock ticks for all time references.
+3. Use PQSF canonical encoding for all signed or hashed artefacts.
+4. Treat no artefact as authoritative until PQSEC evaluation.
+5. Fail closed on any ambiguity, missing input, or verification failure.
+
+Ecosystem conformance asserts that enforcement authority is centralized,
+deterministic, refusal-only, and structurally consolidated within PQSEC.
+
+---
 
 ### 6.2 Component Conformance
 
-Each component specification defines its own conformance requirements. See individual specifications for details.
+Each component specification within the PQ ecosystem defines its own
+conformance requirements.
+
+An implementation MAY be conformant to individual component specifications
+without claiming PQ ecosystem conformance.
+
+Component-level conformance does not imply enforcement correctness unless
+all ecosystem conformance requirements are also satisfied.
+
+---
 
 ### 6.3 Non-Conformance
 
-The following patterns are explicitly non-conformant:
+The following patterns are explicitly non-conformant with the PQ ecosystem:
 
-* Parallel enforcement logic outside PQSEC
-* System clock usage for authority decisions
-* Non-canonical encoding of signed artefacts
-* Implicit trust in network identity, coordinator identity, or mirror identity
-* Degraded modes for Authoritative operations
-* Model self-assertion of action class or permission
+- Parallel enforcement logic outside PQSEC.
+- Use of system clocks for authority, freshness, or expiry decisions.
+- Non-canonical encoding of signed or hashed artefacts.
+- Implicit trust in network identity, coordinator identity, or mirror identity.
+- Degraded, heuristic, or best-effort modes for Authoritative operations.
+- Model self-assertion of action class, permission, or authority.
+
+Any implementation exhibiting these patterns MUST NOT claim PQ ecosystem
+conformance.
 
 ---
 
 ## 7. Version Compatibility
 
+### 7.0 Ecosystem Minimum Versions
+
+Implementations claiming **PQ ecosystem conformance** MUST meet the minimum
+specification versions below.
+
+These minimums define the lowest versions at which the specifications are
+considered mutually compatible at the ecosystem level. They do not replace
+or override component-specific conformance requirements defined in individual
+specifications.
+
+| Specification | Minimum Version | Notes |
+|---------------|-----------------|-------|
+| Epoch Clock | ≥ 2.1.1 | Verifiable time artefacts only |
+| PQSF | ≥ 2.0.2 | Canonical encoding and CryptoSuiteProfiles |
+| PQSEC | ≥ 2.0.1 | Deterministic enforcement core |
+| PQVL | ≥ 1.0.3 | Runtime attestation (when applicable) |
+
+Implementations MAY evaluate using earlier versions for testing or research
+purposes, but MUST NOT claim PQ ecosystem conformance while below the stated
+minimum versions.
+
+---
+
 ### 7.1 Current Versions
 
-The following specification versions are aligned and implementation-ready within the PQ ecosystem:
+The following specification versions are aligned and implementation-ready
+within the PQ ecosystem:
 
 | Specification | Version | Status |
 |---------------|---------|--------|
@@ -413,9 +454,12 @@ The following specification versions are aligned and implementation-ready within
 | PQAI | 1.1.1 | Implementation Ready |
 | Neural Lock | 1.0.0 | Domain Evaluation Requested |
 
+---
+
 ### 7.2 Deprecated Specifications
 
-The following specifications are formally deprecated and MUST NOT be used in new implementations:
+The following specifications are formally deprecated and MUST NOT be used
+in new implementations:
 
 | Specification | Status | Superseded By |
 |---------------|--------|---------------|
@@ -487,7 +531,7 @@ They are evaluated exclusively by PQSEC according to the active enforcement conf
 | valid_consent           | ConsentProof artefacts                              |
 | valid_quorum            | Custody quorum satisfaction                         |
 | valid_ledger            | Ledger continuity                                   |
-| valid_action_class      | PQAI action classification                          |
+| valid_action_class      | PQAI-derived action classification evidence         |
 | valid_model_identity    | PQAI ModelIdentity                                  |
 | valid_drift             | PQAI drift classification                           |
 | valid_delegation        | DelegationConstraint artefacts                      |
@@ -543,6 +587,132 @@ Normative behaviour is defined by PQSEC.
 
 ---
 
+## Annex C — Proof of Ignorance for Dangerous Artefacts (Experimental)
+
+**Status:** OPTIONAL  
+**Maturity:** DOMAIN EVALUATION  
+**Authority:** Evidence-only (non-authoritative)
+
+### C.1 Purpose and Scope
+
+This annex defines an experimental, evidence-only protocol for producing a
+Proof of Ignorance (PoI): a cryptographic artefact asserting that a classified
+dangerous input was handled within a constrained execution boundary, without
+the artefact becoming externally available, and that a defined neutralisation
+procedure was completed.
+
+This annex defines structure, validation rules, and evidentiary boundaries only.  
+All enforcement, refusal, escalation, and policy interpretation are defined
+exclusively by PQSEC.
+
+This annex introduces no authority, no allow semantics, and no mandatory
+behaviour.
+
+### C.2 Authority and Safety Boundary
+
+1. Proof of Ignorance MUST NOT be interpreted as:
+   - proof of global deletion,
+   - proof of human non-awareness,
+   - proof of legal or regulatory compliance,
+   - proof of moral correctness, or
+   - proof of absolute containment.
+2. Proof of Ignorance MUST NOT grant permission, capability, or execution rights.
+3. Proof of Ignorance MUST NOT override refusal, lockout, or policy constraints.
+4. Absence, invalidity, or expiry of Proof of Ignorance MUST evaluate to UNAVAILABLE
+   when consumed as predicate evidence by PQSEC.
+5. No construct in this annex may emit ALLOW semantics.
+
+Proof of Ignorance is conditional evidence only, produced under explicit
+assumptions.
+
+### C.3 Definitions
+
+| Term | Definition |
+|---|---|
+| Dangerous Artefact | Information classified as potentially enabling catastrophic harm |
+| Proof of Ignorance (PoI) | Evidence that neutralisation occurred without artefact export |
+| Neutralisation | Deterministic destruction rendering artefact unrecoverable |
+| AD_MODE | Ignorance-preserving execution mode |
+| Secure Execution Boundary | Runtime boundary attested externally (e.g. PQVL) |
+| Context Hash | Hash binding PoI to canonical context |
+
+### C.4 Protocol States (Informative)
+
+| State | Description |
+|---|---|
+| NORMAL | Default operation |
+| AD_MODE | Ignorance-preserving handling |
+| NEUTRALISED | Artefact neutralised |
+| REFUSED | Operation blocked |
+
+### C.5 Proof of Ignorance Artefact
+
+```cddl
+ProofOfIgnorance = {
+  poi_version: uint,
+  event_id: tstr,
+  issued_tick: uint,
+  epoch_tick_hash: bstr,
+  context_hash: bstr,
+  action: "neutralised" / "refused",
+  drift_class: "NONE" / "WARNING" / "CRITICAL",
+  proof_payload: bstr,
+  suite_profile: tstr,
+  signature: bstr
+}
+```
+
+### C.6 Signature Computation
+
+Signing and verification follow PQSF canonical CBOR rules with signature
+omission.
+
+### C.7 Validation Rules
+
+ProofOfIgnorance is valid if and only if:
+
+* canonical encoding is valid (PQSF)
+* poi_version == 1
+* signature is valid under suite_profile
+* issued_tick is valid under the active time model
+* context_hash is present
+* action == "neutralised" implies drift_class == "NONE"
+* no unknown fields are present
+
+Validation failures MUST be treated as UNAVAILABLE when consumed as predicate
+evidence by PQSEC.
+
+### C.8 Assumptions and Limits
+
+PoI correctness is conditional on documented assumptions including:
+
+* valid runtime attestation (for example via PQVL), when required by policy
+* deterministic neutralisation
+* proof generated post-neutralisation
+
+### C.9 Integration Guidance (Informative)
+
+PQAI → PQSEC → AD_MODE → PQVL → Neutralisation → PoI → PQSEC
+
+### C.10 Non-Goals
+
+This annex does not define:
+
+* censorship
+* compliance claims
+* cognition claims
+* enforcement logic
+
+### C.11 Conformance Statement
+
+Support MAY be claimed if:
+
+* ProofOfIgnorance is produced canonically
+* enforcement remains delegated exclusively to PQSEC
+* assumptions and operating limits are documented
+
+---
+
 ## Changelog
 
 ### Version 2.0.0 (Current)
@@ -551,7 +721,6 @@ Normative behaviour is defined by PQSEC.
 * **Scope Expansion:** Shifted from "PQ-ready" cryptography to addressing modern execution-gap exploits, including replay, time forgery, and consent reuse.
 * **Structural Decoupling:** Redefined the relationship between modules (Clock, VL, AI) such that no component grants authority in isolation; they now provide verifiable predicates for the core enforcement layer.
 * **Deprecation Management:** Formally retired the UDC specification and migrated its normative functions into PQAI and PQSEC.
-
 
 ---
 
